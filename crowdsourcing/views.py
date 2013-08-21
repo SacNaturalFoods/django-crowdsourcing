@@ -22,6 +22,7 @@ from django.template import RequestContext as _rc
 from django.template.loader import render_to_string
 from django.views.decorators.vary import vary_on_cookie
 from django.utils.html import escape
+from django.utils import timezone
 
 from .forms import forms_for_survey
 from .models import (
@@ -137,7 +138,7 @@ def _get_survey_or_404(slug, request=None):
     return get_object_or_404(manager, slug=slug)
 
 def set_voted_cookie(response, survey):
-    response.set_cookie(survey.cookie_key, 'voted', expires=survey.ends_at or datetime.now() + timedelta(days=28))
+    response.set_cookie(survey.cookie_key, 'voted', expires=survey.ends_at or timezone.now() + timedelta(days=28))
     return response
 
 def _survey_submit(request, survey):
@@ -430,7 +431,7 @@ def submissions(request, format):
             except ValueError:
                 return HttpResponse(
                     ("Invalid %s format. Try, for example, "
-                     "%s") % (field, datetime.now().strftime(date_format),))
+                     "%s") % (field, timezone.now().strftime(date_format),))
             if 'submitted_from' == field:
                 search_field = 'submitted_at__gte'
             else:

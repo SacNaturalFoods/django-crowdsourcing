@@ -25,6 +25,7 @@ from django.db.models.query import EmptyQuerySet
 from decimal import Decimal
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
+from django.utils import timezone
 
 
 from .fields import ImageWithThumbnailsField
@@ -74,7 +75,7 @@ OPTION_TYPE_CHOICES = ChoiceEnum(sorted([('char', 'Text Box'),
 
 class LiveSurveyManager(models.Manager):
     def get_query_set(self):
-        now = datetime.datetime.now()
+        now = timezone.now()
         return super(LiveSurveyManager, self).get_query_set().filter(
             is_published=True,
             starts_at__lte=now).filter(
@@ -117,7 +118,7 @@ class Survey(models.Model):
                     "post-close: Results are public on or after the "
                     "\"ends at\" option documented below. never: Results are "
                     "never public."))
-    starts_at = models.DateTimeField(default=datetime.datetime.now)
+    starts_at = models.DateTimeField(default=timezone.now)
     survey_date = models.DateField(blank=True, null=True, editable=False)
     ends_at = models.DateTimeField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
@@ -176,14 +177,14 @@ class Survey(models.Model):
 
     @property
     def is_open(self):
-        now = datetime.datetime.now()
+        now = timezone.now()
         if self.ends_at:
             return self.starts_at <= now < self.ends_at
         return self.starts_at <= now
 
     @property
     def is_live(self):
-        now = datetime.datetime.now()
+        now = timezone.now()
         return all([
             self.is_published,
             self.starts_at <= now,
@@ -737,7 +738,7 @@ class Submission(models.Model):
     survey = models.ForeignKey(Survey)
     user = models.ForeignKey(User, blank=True, null=True)
     ip_address = models.IPAddressField()
-    submitted_at = models.DateTimeField(default=datetime.datetime.now)
+    submitted_at = models.DateTimeField(default=timezone.now)
     session_key = models.CharField(max_length=40, blank=True, editable=False)
     featured = models.BooleanField(default=False)
 
